@@ -1,0 +1,21 @@
+MODULE main
+VAR
+  st: 1..4;
+
+INIT
+ st = 1
+
+TRANS
+  st = 1 & next(st) = 2 | 
+  st = 1 & next(st) = 3 | 
+  st = 1 & next(st) = 4 | 
+  st = 2 & next(st) = 3 | 
+  st = 3 & next(st) = 3 | 
+  st = 4 & next(st) = 1
+
+DEFINE
+  a:= (st = 1 | st = 4);
+  b:= (st = 3 | st = 4);
+
+LTLSPEC a & !b -> !X(a & !b);
+LTLSPEC !a & !b -> X(!a & b);

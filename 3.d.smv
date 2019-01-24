@@ -1,0 +1,11 @@
+MODULE main
+
+VAR
+  p: boolean;
+  q: boolean;
+
+ASSIGN
+  init(p) := TRUE;
+  init(q) := TRUE;
+
+LTLSPEC p -> F q;

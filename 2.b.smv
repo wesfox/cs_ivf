@@ -1,0 +1,17 @@
+MODULE main
+VAR
+  st: 1..4;
+ASSIGN
+  init(st):= 1;
+  next(st):= case
+    st = 1: {2,3,4};
+    st = 2: 3;
+    st = 3: 3;
+    st = 4: 1;
+  esac;
+DEFINE
+    a:= (st = 1 | st = 4);
+    b:= (st = 3 | st = 4);
+
+LTLSPEC a & !b -> !X(a & !b);
+LTLSPEC !a & !b -> X(!a & b);

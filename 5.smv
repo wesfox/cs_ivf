@@ -1,0 +1,48 @@
+MODULE  main
+
+VAR
+    b: boolean; --bateau
+    l: boolean; --lombric
+    m: boolean; --millepate
+    s: boolean; --sauterelle
+
+
+ASSIGN
+    -- initialisation
+    init(b):= FALSE;
+    init(l):= FALSE;
+    init(m):= FALSE;
+    init(s):= FALSE;
+
+    -- transitions
+    -- le bateau bouge a chaque tour
+    next(b):= !b;
+
+    -- lombric
+    next(l):= case
+        !b & !l & ( m | s) : TRUE;
+        TRUE: l;
+    esac;
+
+    -- sauterelle
+    next(s) := case
+        b != s: s;
+        next(l) = !l : s;
+        !b & !s & !m : TRUE;
+        b = s : {TRUE, FALSE};
+        TRUE: s;
+    esac;
+
+    -- millepate
+    next(m) := case
+        b != m : m;
+        next(l) = !l : m;
+        !b & !s & !m : TRUE;
+        b = m & next(s) = !s : m;
+        b = m & next(s) = s: !m;
+        TRUE: m;
+    esac;
+
+
+
+LTLSPEC F(s & l & m & b);

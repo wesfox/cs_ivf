@@ -1,0 +1,24 @@
+VAR
+  p: boolean;
+  q: boolean;
+  c: 1..3;
+
+ASSIGN
+    init(c) := 1;
+    next(c) := case 
+        c=1 & p : 2;
+        c=2 & q : 3;
+        c=3 & p : 2;
+        c=1: 1;
+        c=2: 2;
+        c=3: 3;
+    esac;
+    next(p) := case
+        c=2 : FALSE;
+        p: FALSE;
+        c=3: FALSE;
+        c=1: {TRUE, FALSE};
+    esac;
+
+
+LTLSPEC p -> ((F p & (!p U q)) | X (G !p) );

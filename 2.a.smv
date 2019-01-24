@@ -1,0 +1,31 @@
+MODULE main
+VAR
+  a: boolean;
+  b: boolean;
+ASSIGN
+  init(a):= TRUE;
+  init(b):= FALSE;
+  next(a):= case
+    !a & !b: FALSE;
+    !a & b: FALSE;
+    a & b: TRUE;
+    TRUE: {TRUE, FALSE};
+  esac;
+  next(b):= case
+    !a & !b: TRUE;
+    !a & b: TRUE;
+    a & b: FALSE;
+    next(a): TRUE;
+    TRUE: {TRUE, FALSE};
+  esac;
+
+SPEC EF(EG(a))
+SPEC EF(EG(b))
+LTLSPEC G a
+LTLSPEC a U b
+LTLSPEC a U X (a & !b)
+LTLSPEC X !b & G (!a | !b)
+LTLSPEC X(a & b) & F(!a & !b)
+LTLSPEC F((G a) | (G b))
+LTLSPEC a & !b -> !X(a & !b)
+LTLSPEC !a & !b -> X(!a & b)
