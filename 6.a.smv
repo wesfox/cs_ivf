@@ -1,0 +1,43 @@
+MODULE main
+
+VAR
+  -- i = 0 ou e = 0 => pas de commande
+  a : {1,2,3}; -- etage de l'ascensceur
+  i : {0, 1,2,3}; -- commande interieur
+  e : {0, 1,2,3}; -- commande exterieur
+
+ASSIGN
+  init(i) := 0;
+  init(e) := 0;
+
+  next(i) := case
+    -- si i vaut 0 alors il peut changer de valeur (ou rester à 0)
+    i=0 : {0,1,2,3};
+    -- sinon il garde la même valeur
+    TRUE : i;
+  esac;
+
+  -- même philosophie pour e
+  next(e) := case
+    e=0 : {0,1,2,3};
+    TRUE : e;
+  esac;
+
+  -- définition du prochain étage de l'ascensceur
+  next(a) := case
+    -- priorité sur la commande interieur
+    i!=0 : i;
+    -- ensuite test de la commande exterieur
+    e!=0 : e;
+    -- sinon ne bouge pas
+    TRUE : a;
+  esac;
+
+-- finit si à tout moment dans le futur il peut ne pas y avoir de 
+-- commande interieur et exterieur. Donc definition de e_done et i_done.
+DEFINE
+    e_done:= e=0;
+    i_done:= i=0;
+
+-- il existe toujours un path où l'on peut obtenir les commandes e et i à 0.
+CTLSPEC EG (e_done & i_done);
