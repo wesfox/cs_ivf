@@ -1,5 +1,7 @@
 MODULE main
 
+-- seule la priorité dans le choix de next(a) change par rapport à 6.a.smv
+
 VAR
   -- i = 0 ou e = 0 => pas de commande
   a : {1,2,3}; -- etage de l'ascensceur
@@ -9,20 +11,7 @@ VAR
 ASSIGN
   init(i) := 0;
   init(e) := 0;
-
-  next(i) := case
-    -- si i vaut 0 alors il peut changer de valeur (ou rester à 0)
-    i=0 : {0,1,2,3};
-    -- sinon il garde la même valeur
-    TRUE : i;
-  esac;
-
-  -- même philosophie pour e
-  next(e) := case
-    e=0 : {0,1,2,3};
-    TRUE : e;
-  esac;
-
+  
   -- définition du prochain étage de l'ascensceur
   next(a) := case
     -- priorité sur la commande interieur
@@ -31,6 +20,23 @@ ASSIGN
     e!=0 : e;
     -- sinon ne bouge pas
     TRUE : a;
+  esac;
+
+  next(i) := case
+    -- si la commande suivante est aller à l'étage de la commande i alors
+    -- il y a reset de la commande.
+    next(a)=i : {0,1,2,3};
+    -- si i vaut 0 alors il peut changer de valeur (ou rester à 0)
+    i=0 : {0,1,2,3};
+    -- sinon il garde la même valeur
+    TRUE : i;
+  esac;
+
+  -- même philosophie pour e
+  next(e) := case
+    next(a)=e : {0,1,2,3};
+    e=0 : {0,1,2,3};
+    TRUE : e;
   esac;
 
 -- finit si à tout moment dans le futur il peut ne pas y avoir de 
