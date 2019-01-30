@@ -1,49 +1,127 @@
 MODULE main
 
--- seule la priorité dans le choix de next(a) change par rapport à 6.a.smv
+-- L'ascenseur est occupé ou non, à tout moment. Si il est occupé, une commande
+-- interieur peut arriver pour un étage autre que son étage courant.
+-- L'arrivé de l'ascenseur à un étage par une commande interieur rend l'ascenseur
+-- occupé ou non. Si il y a une commande exterieur, l'ascenseur passe forcément
+-- dans un état occupé. 
 
 VAR
   -- i = 0 ou e = 0 => pas de commande
   a : {1,2,3}; -- etage de l'ascensceur
-  i : {0, 1,2,3}; -- commande interieur
-  e : {0, 1,2,3}; -- commande exterieur
+  i1 : boolean; -- commande interieur pour étage 1
+  i2 : boolean; -- commande interieur pour étage 2
+  i3 : boolean; -- commande interieur pour étage 3
+  e1 : boolean; -- commande exterieur étage 1
+  e2 : boolean; -- commande exterieur étage 2
+  e3 : boolean; -- commande exterieur étage 3
+  o : boolean; -- occupé, quelqu'un dans l'ascenseur
 
 ASSIGN
-  init(i) := 0;
-  init(e) := 0;
-  
-  -- définition du prochain étage de l'ascensceur
+  -- initialisation
+  init(i1) := FALSE;
+  init(i2) := FALSE;
+  init(i3) := FALSE;
+  init(e1) := FALSE;
+  init(e2) := FALSE;
+  init(e3) := FALSE;
+  init(o) := FALSE;
+  init(a) := 1;
+
+  -- toutes les déplacements possibles
+  -- on notera que les commandes interieurs sont
+  -- prioritaires sur les commandes exterieurs
   next(a) := case
-    -- priorité sur la commande interieur
-    i!=0 : i;
-    -- ensuite test de la commande exterieur
-    e!=0 : e;
-    -- sinon ne bouge pas
+    i1 & a=3 : 2;
+    i1 & a=2 : 1;
+    i2 & a=1 : 2;
+    i2 & a=3 : 2;
+    i3 & a=1 : 2;
+    i3 & a=2 : 3;
+    e1 & a=3 : 2;
+    e1 & a=2 : 1;
+    e2 & a=1 : 2;
+    e2 & a=3 : 2;
+    e3 & a=1 : 2;
+    e3 & a=2 : 3;
     TRUE : a;
   esac;
 
-  next(i) := case
-    -- si la commande suivante est aller à l'étage de la commande i alors
-    -- il y a reset de la commande.
-    next(a)=i : {0,1,2,3};
-    -- si i vaut 0 alors il peut changer de valeur (ou rester à 0)
-    i=0 : {0,1,2,3};
-    -- sinon il garde la même valeur
-    TRUE : i;
+  -- pour chaque commande exterieur, on peut 
+  -- 3 : éventuellement la faire passer à TRUE si il n'est pas déjà à TRUE
+  -- et que l'ascensceur n'est pas à l'étage 1.
+  -- 2 : si l'ascenceur arrive à l'étage 1, on switch à FALSE
+  -- 1 : si l'ascenceur n'est pas à l'étage 1 et mais qu'il est appelé à
+  -- l'étage 1, la commande reste vrai.
+  next(e1) := case
+    e1 & next(a)!=1 : TRUE; -- 1
+    next(a)=1 : FALSE; -- 2
+    !e1 & a!=1 : {TRUE, FALSE}; -- 3
+    TRUE: e1;
+  esac;
+  next(e2) := case
+    e2 & next(a)!=2: TRUE;
+    e2 & next(a)=2: FALSE;
+    !e2 & a!=2 : {TRUE, FALSE};
+    TRUE: e2;
+  esac;
+  next(e3) := case
+    e3 & next(a)!=3: TRUE;
+    e3 & next(a)=3: FALSE;
+    !e3 & a!=3 : {TRUE, FALSE};
+    TRUE: e3;
+  esac;
+  
+  -- idem que pour les commandes exterieur sauf qu'il y a besoin
+  -- d'avoir quelqu'un dans l'ascenseur pour pouvoir avoir une commande
+  -- interieur (3)
+  next(i1) := case
+    i1 & next(a)!=1 : TRUE;
+    i1 & next(a)=1: FALSE;
+    !i1 & a!=1 & o: {TRUE, FALSE}; -- 3
+    TRUE: i1;
+  esac;
+  next(i2) := case
+    i2 & next(a)!=2: TRUE;
+    i2 & next(a)=2: FALSE;
+    !i2 & a!=2 & o: {TRUE, FALSE};
+    TRUE: i2;
+  esac;
+  next(i3) := case
+    i3 & next(a)!=3: TRUE;
+    i3 & next(a)=3: FALSE;
+    !i3 & a!=3 & o: {TRUE, FALSE};
+    TRUE: i3;
   esac;
 
-  -- même philosophie pour e
-  next(e) := case
-    next(a)=e : {0,1,2,3};
-    e=0 : {0,1,2,3};
-    TRUE : e;
+  -- si l'ascenseur arrive à un étage commandé, il se vide ou se rempli,
+  -- et s'il se vide, il ne le fait pas forcément totalement.
+  next(o) := case
+    -- commande interieur, donc focément au moins une personne dedans
+    -- donc se vide, mais pas forcément totalement
+    (i1 != next(i1) & !next(i1)) : {TRUE, FALSE};
+    (i2 != next(i2) & !next(i2)) : {TRUE, FALSE};
+    (i3 != next(i3) & !next(i3)) : {TRUE, FALSE};
+    -- commande exterieur, donc quelqu'un veut rentrer donc se remplie forcément
+    (e1 != next(e1) & !next(e1)) : TRUE;
+    (e2 != next(e2) & !next(e2)) : TRUE;
+    (e3 != next(e3) & !next(e3)) : TRUE;
+    -- defaut
+    TRUE: o;
   esac;
 
--- finit si à tout moment dans le futur il peut ne pas y avoir de 
--- commande interieur et exterieur. Donc definition de e_done et i_done.
+-- Finit si :
+-- 1. à tout moment dans le futur il peut ne pas y avoir de 
+-- commande interieur et exterieur et que l'ascenseur soit vide.
+-- 2. globalement, il ne puisse y avoir des une commande interieur
+-- sans que l'ascenseur soit occupé.
+-- Donc definition de e_done et i_done.
 DEFINE
-    e_done:= e=0;
-    i_done:= i=0;
+    e_done:= !(e1 | e2 | e3);
+    i_done:= !(i1 | i2 | i3);
 
 -- il existe toujours un path où l'on peut obtenir les commandes e et i à 0.
-CTLSPEC EG (e_done & i_done);
+CTLSPEC (EG (e_done & i_done & !o)) -- need to add : & AG (!e_done U i_done)
+
+-- draft
+-- (EG (e_done & i_done & !o) & (AG !(i_done & o));

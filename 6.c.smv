@@ -29,21 +29,21 @@ ASSIGN
   init(a) := 1;
 
   -- toutes les déplacements possibles
-  -- on notera que les commandes exterieur sont
-  -- prioritaires sur les commandes interieurs
+  -- on notera que le déplacement vers l'étage 3
+  -- est prioritaire par rapport aux autre étages (i3 et e3 sont prioritaires)
   next(a) := case
-    e1 & a=3 : 2;
-    e1 & a=2 : 1;
-    e2 & a=1 : 2;
-    e2 & a=3 : 2;
+    i3 & a=1 : 2;
+    i3 & a=2 : 3;
     e3 & a=1 : 2;
     e3 & a=2 : 3;
     i1 & a=3 : 2;
     i1 & a=2 : 1;
     i2 & a=1 : 2;
     i2 & a=3 : 2;
-    i3 & a=1 : 2;
-    i3 & a=2 : 3;
+    e1 & a=3 : 2;
+    e1 & a=2 : 1;
+    e2 & a=1 : 2;
+    e2 & a=3 : 2;
     TRUE : a;
   esac;
 

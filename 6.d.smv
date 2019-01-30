@@ -29,21 +29,25 @@ ASSIGN
   init(a) := 1;
 
   -- toutes les déplacements possibles
-  -- on notera que les commandes exterieur sont
-  -- prioritaires sur les commandes interieurs
+  -- on notera que les commandes interieurs sont
+  -- prioritaires sur les commandes exterieurs
+  -- si aucune commande n'est en cours, l'ascenseur se
+  -- dirige vers l'étage 1
   next(a) := case
-    e1 & a=3 : 2;
-    e1 & a=2 : 1;
-    e2 & a=1 : 2;
-    e2 & a=3 : 2;
-    e3 & a=1 : 2;
-    e3 & a=2 : 3;
     i1 & a=3 : 2;
     i1 & a=2 : 1;
     i2 & a=1 : 2;
     i2 & a=3 : 2;
     i3 & a=1 : 2;
     i3 & a=2 : 3;
+    e1 & a=3 : 2;
+    e1 & a=2 : 1;
+    e2 & a=1 : 2;
+    e2 & a=3 : 2;
+    e3 & a=1 : 2;
+    e3 & a=2 : 3;
+    e_done & i_done & a=3 : 2;
+    e_done & i_done & a=2 : 1;
     TRUE : a;
   esac;
 
@@ -121,7 +125,7 @@ DEFINE
     i_done:= !(i1 | i2 | i3);
 
 -- il existe toujours un path où l'on peut obtenir les commandes e et i à 0.
-CTLSPEC (EG (e_done & i_done & !o)) -- need to add : & AG (!e_done U i_done)
+CTLSPEC (EG (e_done & i_done & !o)) & AF (e_done & i_done -> a=1) -- need to add : & AG (!e_done U i_done)
 
 -- draft
 -- (EG (e_done & i_done & !o) & (AG !(i_done & o));
