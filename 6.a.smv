@@ -8,7 +8,7 @@ MODULE main
 
 VAR
   -- i = 0 ou e = 0 => pas de commande
-  a : {1,2,3}; -- etage de l'ascensceur
+  a : {1,2,3}; -- etage de l'ascenseur
   i1 : boolean; -- commande interieur pour étage 1
   i2 : boolean; -- commande interieur pour étage 2
   i3 : boolean; -- commande interieur pour étage 3
@@ -49,9 +49,9 @@ ASSIGN
 
   -- pour chaque commande exterieur, on peut 
   -- 3 : éventuellement la faire passer à TRUE si il n'est pas déjà à TRUE
-  -- et que l'ascensceur n'est pas à l'étage 1.
-  -- 2 : si l'ascenceur arrive à l'étage 1, on switch à FALSE
-  -- 1 : si l'ascenceur n'est pas à l'étage 1 et mais qu'il est appelé à
+  -- et que l'ascenseur n'est pas à l'étage 1.
+  -- 2 : si l'ascenseur arrive à l'étage 1, on switch à FALSE
+  -- 1 : si l'ascenseur n'est pas à l'étage 1 et mais qu'il est appelé à
   -- l'étage 1, la commande reste vrai.
   next(e1) := case
     e1 & next(a)!=1 : TRUE; -- 1
@@ -61,13 +61,13 @@ ASSIGN
   esac;
   next(e2) := case
     e2 & next(a)!=2: TRUE;
-    e2 & next(a)=2: FALSE;
+    next(a)=2: FALSE;
     !e2 & a!=2 : {TRUE, FALSE};
     TRUE: e2;
   esac;
   next(e3) := case
     e3 & next(a)!=3: TRUE;
-    e3 & next(a)=3: FALSE;
+    next(a)=3: FALSE;
     !e3 & a!=3 : {TRUE, FALSE};
     TRUE: e3;
   esac;
@@ -77,19 +77,19 @@ ASSIGN
   -- interieur (3)
   next(i1) := case
     i1 & next(a)!=1 : TRUE;
-    i1 & next(a)=1: FALSE;
+    next(a)=1: FALSE;
     !i1 & a!=1 & o: {TRUE, FALSE}; -- 3
     TRUE: i1;
   esac;
   next(i2) := case
     i2 & next(a)!=2: TRUE;
-    i2 & next(a)=2: FALSE;
+    next(a)=2: FALSE;
     !i2 & a!=2 & o: {TRUE, FALSE};
     TRUE: i2;
   esac;
   next(i3) := case
     i3 & next(a)!=3: TRUE;
-    i3 & next(a)=3: FALSE;
+    next(a)=3: FALSE;
     !i3 & a!=3 & o: {TRUE, FALSE};
     TRUE: i3;
   esac;

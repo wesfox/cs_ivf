@@ -8,7 +8,7 @@ MODULE main
 
 VAR
   -- i = 0 ou e = 0 => pas de commande
-  a : {1,2,3}; -- etage de l'ascensceur
+  a : {1,2,3}; -- etage de l'ascenseur
   i1 : boolean; -- commande interieur pour étage 1
   i2 : boolean; -- commande interieur pour étage 2
   i3 : boolean; -- commande interieur pour étage 3
@@ -53,9 +53,9 @@ ASSIGN
 
   -- pour chaque commande exterieur, on peut 
   -- 3 : éventuellement la faire passer à TRUE si il n'est pas déjà à TRUE
-  -- et que l'ascensceur n'est pas à l'étage 1.
-  -- 2 : si l'ascenceur arrive à l'étage 1, on switch à FALSE
-  -- 1 : si l'ascenceur n'est pas à l'étage 1 et mais qu'il est appelé à
+  -- et que l'ascenseur n'est pas à l'étage 1.
+  -- 2 : si l'ascenseur arrive à l'étage 1, on switch à FALSE
+  -- 1 : si l'ascenseur n'est pas à l'étage 1 et mais qu'il est appelé à
   -- l'étage 1, la commande reste vrai.
   next(e1) := case
     e1 & next(a)!=1 : TRUE; -- 1

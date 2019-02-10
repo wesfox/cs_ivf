@@ -1,48 +1,66 @@
-MODULE  main
+MODULE main
+
+-- Chaque processus a un drapeau compris entre 0 et K-1
+-- Nous utiliserons 6 processus et prendrons K = 7
 
 VAR
-    b: boolean; --bateau
-    l: boolean; --lombric
-    m: boolean; --millepate
-    s: boolean; --sauterelle
+    p0 : 0..6;
+    p1 : 0..6;
+    p2 : 0..6;
+    p3 : 0..6;
+    p4 : 0..6;
+    p5 : 0..6;
 
 
 ASSIGN
-    -- initialisation
-    init(b):= FALSE;
-    init(l):= FALSE;
-    init(m):= FALSE;
-    init(s):= FALSE;
-
-    -- transitions
-    -- le bateau bouge a chaque tour
-    next(b):= !b;
-
-    -- lombric
-    next(l):= case
-        !b & !l & ( m | s) : TRUE;
-        TRUE: l;
+-- nous n'avons pas besoin de phase d'initialisition, 
+-- comme nous voulons montrer que les propriétés de ce modele sont verifiées quelque soit les conditions initiales
+    -- si p0 = p5, le drapeau de p0 prend la valeure du drapeau de p5 + 1 mod K
+    next(p0):= case
+        p0 = p5 & p5 != 6 : p5 +1;
+        p0 = p5 & p5 = 6: 0; -- on sépare les cas p5 = 6 et le reste pour que le drapeau reste dans 0..K-1
+        TRUE : p0;
     esac;
-
-    -- sauterelle
-    next(s) := case
-        b != s: s;
-        next(l) = !l : s;
-        !b & !s & !m : TRUE;
-        b = s : {TRUE, FALSE};
-        TRUE: s;
+    -- pour chacun des process autre que 0, si son drapeau est différent du drapeau du process d'avant, il prend la valeur du
+    -- drapeau du process d'avant
+    next(p1):= case
+        p1 != p0: p0;
+        TRUE: p1;
     esac;
-
-    -- millepate
-    next(m) := case
-        b != m : m;
-        next(l) = !l : m;
-        !b & !s & !m : TRUE;
-        b = m & next(s) = !s : m;
-        b = m & next(s) = s: !m;
-        TRUE: m;
+    next(p2):= case
+        p2 != p1: p1;
+        TRUE: p2;
+    esac;
+    next(p3):= case
+        p3 != p2: p2;
+        TRUE: p3;
+    esac;
+    next(p4):= case
+        p4 != p3: p3;
+        TRUE: p4;
+    esac;
+    next(p5):= case
+        p5 != p4: p4;
+        TRUE: p5;
     esac;
 
 
+DEFINE
+    d0 := p1 = p2 & p2 = p3 & p3 = p4 & p4 = p5 & p0 != p1; -- all flags are equal, except for 0
+    d1 := p1 = p0 & p2 = p3 & p3 = p4 & p4 = p5 & p0 != p2; -- flags 0 & 1 are equal, as are 2, 3, 4 & 5
+    d2 := p1 = p0 & p1 = p2 & p3 = p4 & p4 = p5 & p0 != p3; -- flags 0, 1 & 2 are equal, as are 3, 4 & 5
+    d3 := p1 = p0 & p1 = p2 & p2 = p3 & p4 = p5 & p0 != p4; -- flags 0, 1, 2 & 3 are equal, as are 4 & 5
+    d4 := p1 = p0 & p1 = p2 & p2 = p3 & p3 = p4 & p0 != p5; -- flags 0, 1, 2, 3 & 4 are equal, 5 is different
+    d5 := p0 = p1 & p1 = p2 & p2 = p3 & p3 = p4 & p4 = p5; -- all flags are equal (d5 because 5 has just changed)
 
-LTLSPEC F(s & l & m & b);
+-- a partir d'un certain moment, il y a au maximum deux drapeaux différents sur l'anneau (l'état du 0 se propage a travers l'anneau
+-- puis quand tout les état sont égaux, l'état du 0 s'incrémente et le processus se répete)
+LTLSPEC F G (d0 | d1 | d2 | d3 | d4 | d5);
+-- on passe de d0 a d1, puis de d1 a d2, etc.
+LTLSPEC d0 -> X d1;
+LTLSPEC d1 -> X d2;
+LTLSPEC d2 -> X d3;
+LTLSPEC d3 -> X d4;
+LTLSPEC d4 -> X d5;
+LTLSPEC d5 -> X d0;
+    
